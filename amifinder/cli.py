@@ -3,8 +3,11 @@ from botocore.exceptions import ClientError
 import click
 
 
+# TODO: for 'self' published AMIs, standardize the 'name' so you can search for OS flavor as well
 image_metadata = {
+    'self': {'name': 'base.amzn.VERSION', 'owner': 'self'},
     'amazon_minimal': {'name': '*amzn-ami-minimal-*-VERSION.x86_64*', 'owner': 'amazon'},
+    'amazon': {'name': '*amzn-ami-*-VERSION.x86_64*', 'owner': 'amazon'},
     'ubuntu': {'name': '*ubuntu-*-RELEASE-*-VERSION', 'owner': '099720109477'}
 }
 
@@ -97,8 +100,8 @@ def find_image(region, release, version, os, virt_type):
 
 @click.command()
 @click.argument('instance_size')
-@click.option('--os', default='amazon_minimal',
-              type=click.Choice(['amazon_minimal', 'ubuntu']),
+@click.option('--os', default='self',
+              type=click.Choice(['self', 'amazon', 'amazon_minimal', 'ubuntu']),
               help='OS to search for')
 @click.option('--release', default='16.04', help='release of OS to search for')
 @click.option('--version', default='*', help='AMI version to search for')
