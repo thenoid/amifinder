@@ -5,10 +5,14 @@ import click
 
 # TODO: for 'self' published AMIs, standardize the 'name' so you can search for OS flavor as well
 image_metadata = {
-    'self': {'name': 'base.amzn.VERSION', 'owner': 'self'},
-    'amazon_minimal': {'name': '*amzn-ami-minimal-*-VERSION.x86_64*', 'owner': 'amazon'},
-    'amazon': {'name': '*amzn-ami-*-VERSION.x86_64*', 'owner': 'amazon'},
-    'ubuntu': {'name': '*ubuntu-*-RELEASE-*-VERSION', 'owner': '099720109477'}
+    'amazon': {
+        'amazon_minimal': {'name': '*amzn-ami-minimal-*-VERSION.x86_64*', 'owner': 'amazon'},
+        'amazon': {'name': '*amzn-ami-*-VERSION.x86_64*', 'owner': 'amazon'},
+    },
+    'canonical': {
+        'ubuntu': {'name': '*ubuntu-*-RELEASE-*-VERSION', 'owner': '099720109477'}
+    },
+    'self': {}
 }
 
 instance_to_arch = {
@@ -77,12 +81,17 @@ def find_virt_type(instance_size):
         return ""
 
 
-def find_image(region, release, version, os, virt_type):
-    version_to_find = image_metadata[os]['name'].replace('VERSION', version).replace('RELEASE', release)
+def find_image(owner, os, version, release, pattern, virt_type, region):
+    if owner == 'self':
+        image_metadata[owner][os] = {
+            'name': pattern,
+            'owner': 'self'
+        }
+    version_to_find = image_metadata[owner][os]['name'].replace('OS', os).replace('VERSION', version).replace('RELEASE', release)
     ec2_client = boto3.client('ec2', region_name=region)
     try:
         images = sort_image_list(ec2_client.describe_images(
-            Owners=[image_metadata[os]['owner']],
+            Owners=[image_metadata[owner][os]['owner']],
             Filters=[
                 {'Name': 'state', 'Values': ['available']},
                 {'Name': 'architecture', 'Values': ['x86_64']},
@@ -100,15 +109,15 @@ def find_image(region, release, version, os, virt_type):
 
 @click.command()
 @click.argument('instance_size')
-@click.option('--os', default='self',
-              type=click.Choice(['self', 'amazon', 'amazon_minimal', 'ubuntu']),
-              help='OS to search for')
-@click.option('--release', default='16.04', help='release of OS to search for')
+@click.option('--owner', default='amazon', help='owner of this AMI.  defaults to "amazon"')
+@click.option('--os', default='amazon', help='OS to search for')
 @click.option('--version', default='*', help='AMI version to search for')
+@click.option('--release', default='*', help='Release of OS to search for')
+@click.option('--pattern', default='OS.VERSION.RELEASE', help='pattern to use for Name.  See README.md for details')
 @click.option('--region', default='us-west-2', help='region to query')
-def main(region, release, version, os, instance_size):
+def main(instance_size, owner, os, version, release, pattern, region):
     virt_type = find_virt_type(instance_size)
-    print(find_image(region, release, version, os, virt_type))
+    print(find_image(owner, os, version, release, pattern, virt_type, region))
 
 
 if __name__ == "__main__":

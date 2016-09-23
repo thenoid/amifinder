@@ -1,12 +1,11 @@
-## 0.0.2 (Unreleased)
+## 0.0.2 (September 22, 2016)
 
 FEATURES:
 
 IMPROVEMENTS:
 
  * Add RELEASE.md file
- * Add comment in README.md with project GitHub URL
- * Add in 'self' as an OS type.
+ * Overhaul command format to facilitate self-published AMIs
 
 BUG FIXES:
 
