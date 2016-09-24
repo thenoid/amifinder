@@ -1,9 +1,12 @@
 import boto3
 from botocore.exceptions import ClientError
 import click
+import json
 
 
-# TODO: for 'self' published AMIs, standardize the 'name' so you can search for OS flavor as well
+__version__ = "0.0.3"
+
+
 image_metadata = {
     'amazon': {
         'amazon_minimal': {'name': '*amzn-ami-minimal-*-VERSION.x86_64*', 'owner': 'amazon'},
@@ -81,13 +84,35 @@ def find_virt_type(instance_size):
         return ""
 
 
+def get_ami_info(ami_id, region):
+    ec2_client = boto3.client('ec2', region_name=region)
+    try:
+        ami_info = ec2_client.describe_images(ImageIds=[ami_id])['Images'][0]
+        return {
+            'ami_id': ami_info['ImageId'],
+            'owner_id': ami_info['OwnerId'],
+            'region': region,
+            'name': ami_info['Name'],
+            'creation_date': ami_info['CreationDate'],
+            'public': ami_info['Public'],
+            'state': ami_info['State'],
+            'virtualization_type': ami_info['VirtualizationType'],
+            'tags': ami_info.get('Tags', {}),
+        }
+    except ClientError as e:
+        print("Error: {}".format(e.message))
+    except IndexError:
+        return {}
+
+
 def find_image(owner, os, version, release, pattern, virt_type, region):
     if owner == 'self':
         image_metadata[owner][os] = {
             'name': pattern,
             'owner': 'self'
         }
-    version_to_find = image_metadata[owner][os]['name'].replace('OS', os).replace('VERSION', version).replace('RELEASE', release)
+    version_to_find = \
+        image_metadata[owner][os]['name'].replace('OS', os).replace('VERSION', version).replace('RELEASE', release)
     ec2_client = boto3.client('ec2', region_name=region)
     try:
         images = sort_image_list(ec2_client.describe_images(
@@ -107,7 +132,13 @@ def find_image(owner, os, version, release, pattern, virt_type, region):
         return ""
 
 
-@click.command()
+@click.group()
+@click.version_option(__version__, '-V', message='%(version)s')
+def cli():
+    pass
+
+
+@cli.command()
 @click.argument('instance_size')
 @click.option('--owner', default='amazon', help='owner of this AMI.  defaults to "amazon"')
 @click.option('--os', default='amazon', help='OS to search for')
@@ -115,10 +146,22 @@ def find_image(owner, os, version, release, pattern, virt_type, region):
 @click.option('--release', default='*', help='Release of OS to search for')
 @click.option('--pattern', default='OS.VERSION.RELEASE', help='pattern to use for Name.  See README.md for details')
 @click.option('--region', default='us-west-2', help='region to query')
-def main(instance_size, owner, os, version, release, pattern, region):
+@click.option('--verbose', default=False, is_flag=True)
+def find(instance_size, owner, os, version, release, pattern, region, verbose):
     virt_type = find_virt_type(instance_size)
-    print(find_image(owner, os, version, release, pattern, virt_type, region))
+    ami_id = find_image(owner, os, version, release, pattern, virt_type, region)
+    if verbose:
+        print json.dumps(get_ami_info(ami_id, region))
+    else:
+        print ami_id
+
+
+@cli.command()
+@click.argument('ami_id')
+@click.option('--region', default='us-west-2', help='region to query')
+def info(ami_id, region):
+    print json.dumps(get_ami_info(ami_id, region))
 
 
 if __name__ == "__main__":
-    main()
+    cli()

@@ -1,3 +1,19 @@
+## 0.0.3 (September 23, 2016)
+
+FEATURES:
+
+ * Add an `info` command to output a JSON representation of the AMI information.
+
+IMPROVEMENTS:
+
+ * Add -V to print version and exit.
+ * Move find functionality under a `find` command
+ * Add `--verbose` to the `find` command to output a JSON representation of the AMI info
+ * Update package info for PyPi
+
+BUG FIXES:
+
+
 ## 0.0.2 (September 22, 2016)
 
 FEATURES:
