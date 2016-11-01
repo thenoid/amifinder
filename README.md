@@ -1,7 +1,7 @@
 # amifinder
 Python-based command line tool to find AMI IDs for a few OSes
 
-PyPi project: [amifinder](https://pypi.python.org/pypi/amifinder/0.0.2)
+PyPi project: [amifinder](https://pypi.python.org/pypi/amifinder/0.0.3)
 
 ## Usage
 ```
