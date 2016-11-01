@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='amifinder',
-      version='0.0.3',
+      version='0.0.4',
       description='Command line tool to find AMI IDs for a few OS',
       url='https://github.com/mbrannigan/amifinder',
       author='mbrannigan',

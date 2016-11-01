@@ -4,13 +4,13 @@ import click
 import json
 
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 
 
 image_metadata = {
     'amazon': {
-        'amazon_minimal': {'name': '*amzn-ami-minimal-*-VERSION.x86_64*', 'owner': 'amazon'},
-        'amazon': {'name': '*amzn-ami-*-VERSION.x86_64*', 'owner': 'amazon'},
+        'amazon_minimal': {'name': '*amzn-ami-minimal-*VERSION*x86_64*', 'owner': 'amazon'},
+        'amazon': {'name': '*amzn-ami-*-VERSION*x86_64*', 'owner': 'amazon'},
     },
     'canonical': {
         'ubuntu': {'name': '*ubuntu-*-RELEASE-*-VERSION', 'owner': '099720109477'}

@@ -1,3 +1,15 @@
+## 0.0.4 (November 1, 2016)
+
+FEATURES:
+
+
+IMPROVEMENTS:
+
+
+BUG FIXES:
+  * Amazon changed the format of the name of the Amazon Linux AMI to include a dash vs. a dot as a separator.
+
+
 ## 0.0.3 (September 23, 2016)
 
 FEATURES:
